@@ -117,8 +117,7 @@ var fileDisplay = filePath => {
                 break;
             }
             console.log('newName >>> ', newName)
-
-            // reName(oldName, newName);
+            reName(oldName, newName);
           }
           if (isDir) {
             fileDisplay(filedir);
