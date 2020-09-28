@@ -10,8 +10,8 @@ var fs = require('fs');
 var path = require('path');
 
 // 文件源 绝对路径
-var oldPath = '/Users/stevechow/Desktop/TM/';
-// var oldPath = '/Volumes/LaCie/pictrue/pics/';
+var oldPath = '/Users/stevechow/Desktop/1/';
+var newPath = '/Volumes/LaCie/pictrue/pics/';
 
 // 总数
 allNmu = 0;
@@ -22,114 +22,105 @@ allNmu = 0;
  * @param {String} newName
  */
 var reName = (oldName, newName) => {
-    fs.rename(oldName, newName, err => {
-        if (err) {
-            console.log('命名出错');
-            return;
-        }
-        console.log('命名成功');
-    });
+  fs.rename(oldName, newName, err => {
+    if (err) {
+      // console.log('命名出错');
+      return;
+    }
+    console.log('命名成功');
+  });
 };
+
+var getFileSuffix = (name) => {
+  return name.substring(name.lastIndexOf(".") + 1, name.length).toUpperCase();
+}
+
+var formatDate = (date) => {
+  var y = date.getFullYear();
+  console.log(y);
+  var m = date.getMonth() + 1;
+  m = m < 10 ? '0' + m : m;
+  var d = date.getDate();
+  d = d < 10 ? ('0' + d) : d;
+  return y + '-' + m + '-' + d;
+}
 
 /**
  * 读取文件
+ * 实现方式：递归
  * @param {String} filePath
  */
 var fileDisplay = filePath => {
-    fs.readdir(filePath, (err, files) => {
+  fs.readdir(filePath, (err, files) => {
+    if (err) {
+      console.log('读取目录出错');
+      return;
+    }
+    files.forEach(filename => {
+      var filedir = path.join(filePath, filename);
+      fs.stat(filedir, (err, stats) => {
         if (err) {
-            console.log('读取目录出错');
-            return;
+          console.log('获取文件状态错误');
+        } else {
+          var isFile = stats.isFile();
+          var isDir = stats.isDirectory();
+          // 该判断里面的就是文件
+          if (isFile) {
+            allNmu++;
+            // var timeName = stats.birthtime.toString().slice(0,10);
+            console.log('stats >>> ', stats)
+            console.log('birthtime >>> ', formatDate(stats.birthtime))
+            // console.log(stats.birthtime.toLocaleString());
+
+            //对图片进行复制并重命名
+            var oldName = filedir;
+            var newName = newPath + timeName + '-' + allNmu;
+            var suffix = getFileSuffix(oldName)
+
+            // 对不同的文件进行分类
+            switch (suffix) {
+              case 'JPG':
+                newName = newName + '.JPG';
+                break;
+
+              case 'JPEG':
+                newName = newName + '.JPEG';
+                break;
+
+              case 'PNG':
+                newName = newName + '.PNG';
+                break;
+
+              case 'GIF':
+                newName = newName + '.GIF';
+                break;
+
+              case 'MP4':
+                newName = newName + '.MP4';
+                break;
+
+              case 'MOV':
+                newName = newName + '.MOV';
+                break;
+
+              case 'M4V':
+                newName = newName + '.M4V';
+                break;
+
+              default:
+                break;
+            }
+            console.log('newName >>> ', newName)
+
+            reName(oldName, newName);
+          }
+          if (isDir) {
+            fileDisplay(filedir);
+          }
         }
-        files.forEach(filename => {
-            var filedir = path.join(filePath, filename);
-            fs.stat(filedir, (err, stats) => {
-                if (err) {
-                    console.log('获取文件状态错误');
-                } else {
-                    var isFile = stats.isFile();
-                    var isDir = stats.isDirectory();
-                    // 该判断里面的就是文件
-                    if (isFile) {
-                        allNmu++;
-                        var timeName = stats.birthtime.toLocaleString();
-                        console.log(stats.birthtime.toLocaleString());
-
-                        //对图片进行复制并重命名
-                        var oldName = filedir;
-                        var newName = oldPath + timeName + '-' + allNmu;
-
-                        // 对不同的文件进行分类
-                        if (oldName.indexOf('jpg') !== -1) {
-                            newName = newName + '.jpg';
-                            // console.log(newName);
-                            reName(oldName, newName);
-                            return;
-                        }
-
-                        if (oldName.indexOf('jpeg') !== -1) {
-                            newName = newName + '.jpg';
-                            console.log(newName);
-                            reName(oldName, newName);
-                            return;
-                        }
-
-                        if (oldName.indexOf('JPG') !== -1) {
-                            newName = newName + '.jpg';
-                            console.log(newName);
-                            reName(oldName, newName);
-                            return;
-                        }
-
-                        if (oldName.indexOf('png') !== -1) {
-                            newName = newName + '.png';
-                            console.log(newName);
-                            reName(oldName, newName);
-                            return;
-                        }
-
-                        if (oldName.indexOf('PNG') !== -1) {
-                            newName = newName + '.png';
-                            console.log(newName);
-                            reName(oldName, newName);
-                            return;
-                        }
-
-                        if (oldName.indexOf('gif') !== -1) {
-                            newName = newName + '.gif';
-                            console.log(newName);
-                            reName(oldName, newName);
-                            return;
-                        }
-
-                        if (oldName.indexOf('mp4') !== -1) {
-                            newName = newName + '.mp4';
-                            console.log(newName);
-                            reName(oldName, newName);
-                            return;
-                        }
-
-                        if (oldName.indexOf('mov') !== -1) {
-                            newName = newName + '.mov';
-                            console.log(newName);
-                            reName(oldName, newName);
-                            return;
-                        }
-
-                        if (oldName.indexOf('m4v') !== -1) {
-                            newName = newName + '.m4v';
-                            console.log(newName);
-                            reName(oldName, newName);
-                            return;
-                        }
-                    }
-                    if (isDir) {
-                        fileDisplay(filedir);
-                    }
-                }
-            });
-        });
+      });
     });
+  });
 };
 
 fileDisplay(oldPath);
