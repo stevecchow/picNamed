@@ -11,7 +11,7 @@ var path = require('path');
 
 // 文件源 绝对路径
 var oldPath = '/Users/stevechow/Desktop/1/';
-var newPath = '/Volumes/LaCie/pictrue/pics/';
+var newPath = '/Users/stevechow/Desktop/pics/';
 
 // 总数
 allNmu = 0;
@@ -24,7 +24,7 @@ allNmu = 0;
 var reName = (oldName, newName) => {
   fs.rename(oldName, newName, err => {
     if (err) {
-      // console.log('命名出错');
+      console.log('命名出错');
       return;
     }
     console.log('命名成功');
@@ -35,11 +35,12 @@ var getFileSuffix = (name) => {
   return name.substring(name.lastIndexOf(".") + 1, name.length).toUpperCase();
 }
 
-var formatDate = (date) => {
+function formatDate (date) {
+  console.log(date);
   var y = date.getFullYear();
   console.log(y);
   var m = date.getMonth() + 1;
-  m = m < 10 ? '0' + m : m;
+  m = m < 10 ? ('0' + m) : m;
   var d = date.getDate();
   d = d < 10 ? ('0' + d) : d;
   return y + '-' + m + '-' + d;
@@ -67,15 +68,16 @@ var fileDisplay = filePath => {
           // 该判断里面的就是文件
           if (isFile) {
             allNmu++;
-            // var timeName = stats.birthtime.toString().slice(0,10);
+            var timeName = formatDate(stats.birthtime);
             console.log('stats >>> ', stats)
             console.log('birthtime >>> ', formatDate(stats.birthtime))
-            // console.log(stats.birthtime.toLocaleString());
 
             //对图片进行复制并重命名
             var oldName = filedir;
             var newName = newPath + timeName + '-' + allNmu;
             var suffix = getFileSuffix(oldName)
+
+            console.log('suffix >>> ', suffix)
 
             // 对不同的文件进行分类
             switch (suffix) {
@@ -95,6 +97,10 @@ var fileDisplay = filePath => {
                 newName = newName + '.GIF';
                 break;
 
+              case 'HEIC':
+                newName = newName + '.HEIC';
+                break;
+
               case 'MP4':
                 newName = newName + '.MP4';
                 break;
@@ -112,7 +118,7 @@ var fileDisplay = filePath => {
             }
             console.log('newName >>> ', newName)
 
-            reName(oldName, newName);
+            // reName(oldName, newName);
           }
           if (isDir) {
             fileDisplay(filedir);
