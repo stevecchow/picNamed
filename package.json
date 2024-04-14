@@ -8,5 +8,9 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "exif-parser": "^0.1.12",
+    "fs-extra": "^11.2.0"
+  }
 }

@@ -6,8 +6,9 @@
  *  1、递归遍历文件夹中的 所有文件
  *  2、打印其 内容创建时间 的 毫秒值
  */
-var fs = require("fs");
+var fs = require("fs-extra");
 var path = require("path");
+var ExifParser = require('exif-parser');
 
 // 文件源 绝对路径
 var oldPath = "/Users/stevechow/Desktop/1/";
@@ -67,68 +68,144 @@ var fileDisplay = (filePath) => {
       console.log("读取目录出错");
       return;
     }
-    files.forEach((filename) => {
-      var filedir = path.join(filePath, filename);
+    files.forEach((fileItem) => {
+      var filedir = path.join(filePath, fileItem);
       fs.stat(filedir, (err, stats) => {
         if (err) {
           console.log("获取文件状态错误");
         } else {
           var isFile = stats.isFile();
           var isDir = stats.isDirectory();
-          var isBigger = stats.size === 4096;
+          // var isBigger = stats.size === 4096;
           // 该判断里面的就是文件
-          if (isFile && !isBigger) {
-            allNmu++;
-            var timeName = formatDate(stats.birthtime);
+          if (isFile) {
             console.log("stats >>> ", stats);
-            // console.log("birthtime >>> ", formatDate(stats.birthtime));
-            
             //对图片进行复制并重命名
             var oldName = filedir;
-            var newName = newPath + timeName + "-" + allNmu;
             var suffix = getFileSuffix(oldName);
+            // console.log("oldName >>> ", oldName);
+            // console.log("suffix >>> ", suffix);
+            if (suffix === ".JPG" || suffix === ".JPEG") {
+              fs.readFile(oldName, (err, data) => {
+                // console.log("data >>> ", data);
+                allNmu++;
+                if (err) {
+                  console.error(err);
+                  // return;
+                }
+                try {
+                  // 解析图片的 Exif 数据
+                  const exifParser = ExifParser.create(data);
+                  const exifResult = exifParser.parse();
 
-            console.log("suffix >>> ", suffix);
+                  // 获取图片的内容创建时间
+                  console.log("exifResult >>> ", exifResult);
+                  const contentCreationTime = exifResult.tags.DateTimeOriginal;
+                  console.log("contentCreationTime >>> ", contentCreationTime);
+                  let createTime = ""
+                  if (contentCreationTime) {
+                    createTime = formatDate(new Date(contentCreationTime * 1000));
+                  } else {
+                    createTime = formatDate(stats.birthtime);
+                  }
 
-            // 对不同的文件进行分类
-            switch (suffix) {
-              case "JPG":
-                newName = newName + ".JPG";
-                break;
+                  console.log('图片内容创建时间:', createTime);
 
-              case "JPEG":
-                newName = newName + ".JPEG";
-                break;
+                  var newName = newPath + createTime + "-" + allNmu;
 
-              case "PNG":
-                newName = newName + ".PNG";
-                break;
+                  // 对不同的文件进行分类
+                  switch (suffix) {
+                    case "JPG":
+                      newName = newName + ".JPG";
+                      break;
 
-              case "GIF":
-                newName = newName + ".GIF";
-                break;
+                    case "JPEG":
+                      newName = newName + ".JPEG";
+                      break;
 
-              case "HEIC":
-                newName = newName + ".HEIC";
-                break;
+                    case "PNG":
+                      newName = newName + ".PNG";
+                      break;
 
-              case "MP4":
-                newName = newName + ".MP4";
-                break;
+                    case "GIF":
+                      newName = newName + ".GIF";
+                      break;
 
-              case "MOV":
-                newName = newName + ".MOV";
-                break;
+                    case "HEIC":
+                      newName = newName + ".HEIC";
+                      break;
 
-              case "M4V":
-                newName = newName + ".M4V";
-                break;
+                    case "MP4":
+                      newName = newName + ".MP4";
+                      break;
 
-              default:
-                break;
+                    case "MOV":
+                      newName = newName + ".MOV";
+                      break;
+
+                    case "M4V":
+                      newName = newName + ".M4V";
+                      break;
+
+                    default:
+                      break;
+                  }
+                  console.log("newName >>> ", newName);
+                  reName(oldName, newName);
+                } catch (err) {
+                  console.error('Error reading file:', err);
+                }
+              });
+            } else {
+              try {
+                // 获取图片的内容创建时间
+                let createTime = formatDate(stats.birthtime);
+                console.log('图片内容创建时间:', createTime);
+                var newName = newPath + createTime + "-" + allNmu;
+
+                // 对不同的文件进行分类
+                switch (suffix) {
+                  case "JPG":
+                    newName = newName + ".JPG";
+                    break;
+
+                  case "JPEG":
+                    newName = newName + ".JPEG";
+                    break;
+
+                  case "PNG":
+                    newName = newName + ".PNG";
+                    break;
+
+                  case "GIF":
+                    newName = newName + ".GIF";
+                    break;
+
+                  case "HEIC":
+                    newName = newName + ".HEIC";
+                    break;
+
+                  case "MP4":
+                    newName = newName + ".MP4";
+                    break;
+
+                  case "MOV":
+                    newName = newName + ".MOV";
+                    break;
+
+                  case "M4V":
+                    newName = newName + ".M4V";
+                    break;
+
+                  default:
+                    break;
+                }
+                console.log("newName >>> ", newName);
+                reName(oldName, newName);
+              } catch (err) {
+                console.error('Error reading file:', err);
+              }
             }
-            console.log("newName >>> ", newName);
-            reName(oldName, newName);
           }
           if (isDir) {
             fileDisplay(filedir);
